@@ -1,0 +1,391 @@
+/* ============================================================
+   Zmienne kolorów - cała aplikacja trzyma się palety czarno-białej
+   (plus jeden odcień szarości na elementy drugorzędne)
+   ============================================================ */
+:root {
+    --bg: #ffffff;
+    --fg: #111111;
+    --muted: #6b6b6b;
+    --border: #dddddd;
+    --hover: #f2f2f2;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.5;
+}
+
+/* ---------- Odnośnik pomijający (skip link) ---------- */
+/* Domyślnie wysunięty poza widoczny obszar ekranu (top: -3rem) - dla
+   użytkownika myszy strona wygląda dokładnie tak samo jak wcześniej,
+   minimalistyczny design pozostaje nienaruszony. Dopiero fokus
+   klawiatury (Tab od początku strony) przesuwa go w widoczny obszar. */
+.skip-link {
+    position: absolute;
+    top: -3rem;
+    left: 1rem;
+    z-index: 1000;
+    background: var(--fg);
+    color: var(--bg);
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+    top: 1rem;
+    outline: 2px solid var(--bg);
+    outline-offset: 2px;
+}
+
+.app {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+}
+    
+.layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+        "main"
+        "hourly"
+        "daily";
+    gap: 1.75rem;
+    align-items: start;
+    margin-top: 2rem;
+}
+
+/* Od szerokości 900px robi się miejsce na pełny układ 3-kolumnowy:
+   prognoza 7-dniowa | wyszukiwarka + mapa | prognoza 24-godzinna */
+@media (min-width: 900px) {
+    .layout {
+        grid-template-columns: 210px minmax(0, 1fr) 210px;
+        grid-template-areas: "daily main hourly";
+    }
+}
+
+.layout__daily  { grid-area: daily; }
+.layout__main   { grid-area: main; }
+.layout__hourly { grid-area: hourly; }
+
+/* ---------- Panele boczne (7 dni / 24h) ---------- */
+.panel__title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+}
+
+/* Na wąskich ekranach panele boczne dostają wyraźne obramowanie, żeby
+   oddzielić je wizualnie od głównej kolumny mimo bycia w jednej kolumnie */
+.panel {
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+}
+
+@media (min-width: 900px) {
+    /* Na szerokim ekranie panele boczne są "lżejsze" (bez obramowania) -
+       same są już oddzielone od reszty samą siatką kolumn */
+    .panel {
+        border: none;
+        padding: 0;
+    }
+}
+
+/* ---------- Listy prognoz (7-dniowa i godzinowa) ---------- */
+.forecast-list {
+    list-style: none;
+    border-top: 1px solid var(--border);
+}
+
+.forecast-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+}
+
+.forecast-item__time {
+    font-weight: 600;
+    min-width: 3rem;
+    flex-shrink: 0;
+}
+
+.forecast-item__desc {
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-align: center;
+    flex: 1;
+    padding: 0 0.35rem;
+}
+
+.forecast-item__temp {
+    font-weight: 600;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* Prognoza godzinowa ma 24 wiersze - żeby nie rozciągać strony w
+   nieskończoność, po przekroczeniu pewnej wysokości robi się przewijalna */
+.forecast-list--hourly {
+    max-height: 640px;
+    overflow-y: auto;
+}
+
+.forecast-empty {
+    padding: 0.75rem 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* ---------- Nagłówek ---------- */
+.app__header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.app__subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+/* ---------- Formularz wyszukiwania ---------- */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.search {
+    display: flex;
+    gap: 0.5rem;
+    margin: 2rem 0 1rem;
+}
+
+.search__input {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--fg);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+.search__input:focus {
+    outline: none;
+    border-color: var(--fg);
+}
+
+.search__button {
+    border: 1px solid var(--fg);
+    background: var(--fg);
+    color: var(--bg);
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+
+.search__button:hover {
+    background: var(--bg);
+    color: var(--fg);
+}
+
+/* ---------- Lista ostatnich wyszukiwań (chipy) ---------- */
+.recent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    min-height: 1px; /* żeby nie "skakał" layout gdy lista jest pusta */
+}
+
+.recent__item {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--fg);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 999px;
+    transition: background .15s ease;
+}
+
+.recent__item:hover {
+    background: var(--hover);
+}
+
+/* kropka informująca, że dane pochodzą z pamięci lokalnej, nie z API */
+.recent__item::after {
+    content: " •";
+    color: var(--muted);
+}
+
+/* ---------- Komunikaty ---------- */
+.message {
+    border: 1px dashed var(--border);
+    padding: 1rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ---------- Karta pogody ---------- */
+.weather {
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.weather__location h2 {
+    font-size: 1.25rem;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.weather__location span {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.weather__main {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.weather__temp {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.weather__desc {
+    color: var(--muted);
+}
+
+.weather__details {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+
+.weather__details li {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+}
+
+.weather__details span {
+    color: var(--muted);
+    margin-bottom: 0.15rem;
+}
+
+/* ---------- Mapa ---------- */
+.map {
+    height: 380px;
+    border: 1px solid var(--border);
+}
+
+/* Filtr odbarwiający zastosowany TYLKO do własnej "paski" bazowych
+   kafelków OSM (pane "baseTiles" tworzony w script.js). Radar opadów
+   celowo używa domyślnej paski Leaflet i NIE jest tym filtrem objęty,
+   więc zostaje w kolorze. */
+.leaflet-pane.leaflet-baseTiles-pane {
+    filter: grayscale(1) contrast(1.1);
+}
+
+.leaflet-control-attribution {
+    font-size: 0.65rem;
+}
+
+/* ---------- Znacznik temperatury na mapie ---------- */
+/* .temp-marker-wrapper zeruje domyślne białe tło/obramowanie divIcon,
+   .temp-marker to właściwy, kolorowy "pin" z wartością temperatury */
+.temp-marker-wrapper {
+    background: transparent;
+    border: none;
+}
+
+.temp-marker {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Wartość domyślna/zapasowa - w praktyce ZAWSZE nadpisywana stylem
+       inline z script.js (funkcja contrastingTextColor()), która
+       dobiera czarny albo biały tekst zależnie od jasności konkretnego
+       koloru tła, żeby zachować wymagany kontrast WCAG na całej,
+       rozbieżnej skali kolorów TEMP_SCALE. */
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Legenda kolorów temperatury pod mapą ---------- */
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.legend__title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--fg);
+}
+
+.legend__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.legend__item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.legend__swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
